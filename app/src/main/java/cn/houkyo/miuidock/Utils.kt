@@ -2,19 +2,9 @@ package cn.houkyo.miuidock
 
 import android.annotation.SuppressLint
 import android.content.Context;
-import java.io.DataOutputStream
 
 class Utils {
     val DATAFILENAME = "MIUIDockConfig"
-
-    fun killHomeProcess(): Int {
-        val suProcess = Runtime.getRuntime().exec("su")
-        val os = DataOutputStream(suProcess.outputStream)
-        os.writeBytes("am force-stop com.miui.home;exit;")
-        os.flush()
-        os.close()
-        return suProcess.waitFor()
-    }
 
     fun dip2px(context: Context, dpValue: Int): Int {
         val scale = context.resources.displayMetrics.density
@@ -33,7 +23,7 @@ class Utils {
             val editor = sharedPreferences.edit()
             editor.putInt(key, value)
             editor.apply()
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             // 也许是模块尚未加载
         }
     }
@@ -43,11 +33,8 @@ class Utils {
             val sharedPreferences = context.getSharedPreferences(DATAFILENAME, Context.MODE_WORLD_READABLE)
             val result = sharedPreferences.getInt(key, defValue)
             return result
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             // 也许是模块尚未加载
-            if (key == "TEST_MODULE") {
-                return 0
-            }
         }
         return defValue
     }
