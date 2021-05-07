@@ -1,10 +1,12 @@
 package cn.houkyo.miuidock
 
-import android.annotation.SuppressLint
+
 import android.content.Context;
 import android.content.res.Configuration
 import android.util.TypedValue
 import android.widget.Toast
+import de.robv.android.xposed.XposedBridge
+
 
 class Utils {
     val DATA_FILE_NAME = "MIUIDockConfig"
@@ -19,24 +21,25 @@ class Utils {
         return (pxValue / scale + 0.5f).toInt()
     }
 
-    @SuppressLint("SetWorldReadable")
     fun saveData(context: Context, key: String, value: Int) {
         try {
-            val sharedPreferences = context.getSharedPreferences(DATA_FILE_NAME, Context.MODE_WORLD_READABLE)
+            val sharedPreferences = context.getSharedPreferences(BuildConfig.APPLICATION_ID, Context.MODE_WORLD_READABLE)
             val editor = sharedPreferences.edit()
             editor.putInt(key, value)
             editor.apply()
         } catch (e: Throwable) {
             // 也许是模块尚未加载
+            XposedBridge.log("[MIUIDock] Error:" + e.message)
         }
     }
 
     fun getData(context: Context, key: String, defValue: Int): Int {
         try {
-            val sharedPreferences = context.getSharedPreferences(DATA_FILE_NAME, Context.MODE_WORLD_READABLE)
+            val sharedPreferences = context.getSharedPreferences(BuildConfig.APPLICATION_ID, Context.MODE_WORLD_READABLE)
             return sharedPreferences.getInt(key, defValue)
         } catch (e: Throwable) {
             // 也许是模块尚未加载
+            XposedBridge.log("[MIUIDock] Error:" + e.message)
         }
         return defValue
     }
