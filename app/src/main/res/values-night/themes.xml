@@ -1,16 +1,39 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Theme.Miuidock" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+    <style name="Theme.Miuidock" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/purple_200</item>
-        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="colorPrimary">#a88fdd</item>
+        <item name="colorPrimaryVariant">#4c20b1</item>
         <item name="colorOnPrimary">@color/black</item>
         <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/purple_200</item>
-        <item name="colorSecondaryVariant">@color/purple_700</item>
+        <item name="colorSecondary">#a88fdd</item>
+        <item name="colorSecondaryVariant">#4c20b1</item>
         <item name="colorOnSecondary">@color/black</item>
+
         <!-- Status bar color. -->
-        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
+
         <!-- Customize your theme here. -->
+    </style>
+
+    <style name="ToolbarTheme" parent="@style/ThemeOverlay.AppCompat.Dark">
+        <item name="android:textColor">#DDDDDD</item>
+        <item name="android:actionMenuTextColor">#DDDDDD</item>
+    </style>
+    <style name="ToolbarPopupTheme" parent="@style/ThemeOverlay.AppCompat.Light">
+        <item name="android:colorBackground">#131313</item>
+        <item name="android:textColor">#9E9E9E</item>
+        <item name="actionOverflowMenuStyle">@style/OverflowMenuStyle</item> <!--新增一个item，用于控制menu-->
+    </style>
+    <style name="SplashTheme" parent="Theme.AppCompat">
+        <item name="windowNoTitle">true</item><!--无标题-->
+        <item name="android:windowFullscreen">true</item><!--全屏-->
+        <item name="android:background">@color/black</item>
+        <item name="android:textColor">#9E9E9E</item>
+        <!-- <item name="android:windowBackground">@drawable/splash_background</item>-->
+    </style>
+    <style name="AlertDialog" parent="Theme.AppCompat.DayNight.Dialog.Alert">
+        <item name="android:background">#131313</item>
+        <item name="android:windowBackground">#131313</item>
+        <item name="android:textColor">#9E9E9E</item>
     </style>
 </resources>

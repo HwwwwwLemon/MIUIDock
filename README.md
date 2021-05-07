@@ -12,3 +12,9 @@
 
 ### License
 本项目基于[MIT](https://github.com/ouhoukyo/MIUIDock/blob/master/LICENSE)协议开源
+
+# 鸣谢
+- [StatusBarUtil](https://github.com/Ye-Miao/StatusBarUtil):Android沉浸式状态栏，支持状态栏渐变色
+- [RubberPicker](https://github.com/Chrisvin/RubberPicker):SeekBar美化
+- [XposedBridge](https://github.com/rovo89/XposedBridge): the OG xposed framework APIs
+- [LSPosed](https://github.com/LSPosed/LSPosed):LSPosed Xposed Framework.

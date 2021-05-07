@@ -16,16 +16,16 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage
 
 class MainHook : IXposedHookLoadPackage, IXposedHookInitPackageResources {
     companion object {
-        const val SELF_PACKAGENAME = BuildConfig.APPLICATION_ID
-        const val MIUI_HOME_LAUNCHER_PACKAGENAME = "com.miui.home"
-        const val DEVICE_CONFIG_CLASSNAME = "$MIUI_HOME_LAUNCHER_PACKAGENAME.launcher.DeviceConfig"
-        const val LAUNCHER_CLASSNAME = "$MIUI_HOME_LAUNCHER_PACKAGENAME.launcher.Launcher"
-        const val BLUR_UTILS_CLASSNAME = "$MIUI_HOME_LAUNCHER_PACKAGENAME.launcher.common.BlurUtils"
-        const val DEVICELEVEL_UTILS_CLASSNAME =
-                "$MIUI_HOME_LAUNCHER_PACKAGENAME.launcher.common.DeviceLevelUtils"
-        const val CPULEVEL_UTILS_CLASSNAME =
-                "$MIUI_HOME_LAUNCHER_PACKAGENAME.launcher.common.CpuLevelUtils"
-        const val UTILITIES_CLASSNAME = "$MIUI_HOME_LAUNCHER_PACKAGENAME.launcher.common.Utilities"
+        const val SELF_PACKAGE_NAME = BuildConfig.APPLICATION_ID
+        const val MIUI_HOME_LAUNCHER_PACKAGE_NAME = "com.miui.home"
+        const val DEVICE_CONFIG_CLASSNAME = "$MIUI_HOME_LAUNCHER_PACKAGE_NAME.launcher.DeviceConfig"
+        const val LAUNCHER_CLASSNAME = "$MIUI_HOME_LAUNCHER_PACKAGE_NAME.launcher.Launcher"
+        const val BLUR_UTILS_CLASSNAME = "$MIUI_HOME_LAUNCHER_PACKAGE_NAME.launcher.common.BlurUtils"
+        const val DEVICE_LEVEL_UTILS_CLASSNAME =
+                "$MIUI_HOME_LAUNCHER_PACKAGE_NAME.launcher.common.DeviceLevelUtils"
+        const val CPU_LEVEL_UTILS_CLASSNAME =
+                "$MIUI_HOME_LAUNCHER_PACKAGE_NAME.launcher.common.CpuLevelUtils"
+        const val UTILITIES_CLASSNAME = "$MIUI_HOME_LAUNCHER_PACKAGE_NAME.launcher.common.Utilities"
 
         // 单位dip
         val DOCK_RADIUS = DefaultValue().radius
@@ -51,15 +51,15 @@ class MainHook : IXposedHookLoadPackage, IXposedHookInitPackageResources {
 
     override fun handleLoadPackage(lpparam: XC_LoadPackage.LoadPackageParam) {
         when (lpparam.packageName) {
-            SELF_PACKAGENAME -> {
-                XposedHelpers.findAndHookMethod("${SELF_PACKAGENAME}.MainActivity",
+            SELF_PACKAGE_NAME -> {
+                XposedHelpers.findAndHookMethod("${SELF_PACKAGE_NAME}.Utils",
                         lpparam.classLoader, "isModuleEnable", object : XC_MethodHook() {
                     override fun afterHookedMethod(param: MethodHookParam) {
                         param.result = true
                     }
                 })
             }
-            MIUI_HOME_LAUNCHER_PACKAGENAME -> {
+            MIUI_HOME_LAUNCHER_PACKAGE_NAME -> {
                 launcherHook(lpparam)
                 deviceConfigHook(lpparam)
                 if (getData("HIGH_LEVEL", HIGH_LEVEL) == 1) {
@@ -74,12 +74,12 @@ class MainHook : IXposedHookLoadPackage, IXposedHookInitPackageResources {
     }
 
     override fun handleInitPackageResources(resparam: XC_InitPackageResources.InitPackageResourcesParam) {
-        if (resparam.packageName != MIUI_HOME_LAUNCHER_PACKAGENAME) {
+        if (resparam.packageName != MIUI_HOME_LAUNCHER_PACKAGE_NAME) {
             return
         }
 
         resparam.res.hookLayout(
-                MIUI_HOME_LAUNCHER_PACKAGENAME,
+                MIUI_HOME_LAUNCHER_PACKAGE_NAME,
                 "layout",
                 "layout_search_bar",
                 object : XC_LayoutInflated() {
@@ -110,22 +110,22 @@ class MainHook : IXposedHookLoadPackage, IXposedHookInitPackageResources {
                     object : XC_MethodHook() {
                         override fun afterHookedMethod(param: MethodHookParam) {
                             super.afterHookedMethod(param)
-                            val SearchBarObject = XposedHelpers.callMethod(
+                            val searchBarObject = XposedHelpers.callMethod(
                                     param.thisObject,
                                     "getSearchBar"
                             ) as FrameLayout
-                            val SearchBarDesktop = SearchBarObject.getChildAt(0) as RelativeLayout
-                            val SearchBarDrawer = SearchBarObject.getChildAt(1) as RelativeLayout
-                            val SearchBarContainer = SearchBarObject.parent as FrameLayout
-                            val SearchEdgeLayout = SearchBarContainer.parent as FrameLayout
-                            // 重新给Searbar容器排序
-                            SearchEdgeLayout.removeView(SearchBarContainer)
-                            SearchEdgeLayout.addView(SearchBarContainer, 0)
+                            val searchBarDesktop = searchBarObject.getChildAt(0) as RelativeLayout
+                            val searchBarDrawer = searchBarObject.getChildAt(1) as RelativeLayout
+                            val searchBarContainer = searchBarObject.parent as FrameLayout
+                            val searchEdgeLayout = searchBarContainer.parent as FrameLayout
+                            // 重新给Searchbar容器排序
+                            searchEdgeLayout.removeView(searchBarContainer)
+                            searchEdgeLayout.addView(searchBarContainer, 0)
                             // 清空搜索图标和小爱同学
-                            SearchBarDesktop.removeAllViews()
+                            searchBarDesktop.removeAllViews()
                             // 修改高度
-                            SearchBarObject.layoutParams.height = Utils().dip2px(
-                                    SearchBarDesktop.context,
+                            searchBarObject.layoutParams.height = Utils().dip2px(
+                                    searchBarDesktop.context,
                                     getData("DOCK_HEIGHT", DOCK_HEIGHT)
                             )
 
@@ -135,17 +135,17 @@ class MainHook : IXposedHookLoadPackage, IXposedHookInitPackageResources {
                             val mAllAppView = mAllAppViewField.get(param.thisObject) as RelativeLayout
                             val mAllAppSearchView =
                                     mAllAppView.getChildAt(mAllAppView.childCount - 1) as FrameLayout
-                            SearchBarObject.removeView(SearchBarDrawer)
-                            mAllAppSearchView.addView(SearchBarDrawer)
-                            SearchBarDrawer.bringToFront()
-                            val layoutParams = SearchBarDrawer.layoutParams as FrameLayout.LayoutParams
-                            SearchBarDrawer.layoutParams.height = Utils().dip2px(
-                                    SearchBarDesktop.context,
+                            searchBarObject.removeView(searchBarDrawer)
+                            mAllAppSearchView.addView(searchBarDrawer)
+                            searchBarDrawer.bringToFront()
+                            val layoutParams = searchBarDrawer.layoutParams as FrameLayout.LayoutParams
+                            searchBarDrawer.layoutParams.height = Utils().dip2px(
+                                    searchBarDesktop.context,
                                     45
                             )
-                            layoutParams.leftMargin = Utils().dip2px(SearchBarDesktop.context, 15)
-                            layoutParams.rightMargin = Utils().dip2px(SearchBarDesktop.context, 15)
-                            SearchBarDrawer.layoutParams = layoutParams
+                            layoutParams.leftMargin = Utils().dip2px(searchBarDesktop.context, 15)
+                            layoutParams.rightMargin = Utils().dip2px(searchBarDesktop.context, 15)
+                            searchBarDrawer.layoutParams = layoutParams
                         }
                     })
         } catch (e: Throwable) {
@@ -229,12 +229,12 @@ class MainHook : IXposedHookLoadPackage, IXposedHookInitPackageResources {
                 BLUR_UTILS_CLASSNAME,
                 lpparam.classLoader
         ) ?: return
-        val _DEVICELEVEL_UTILS_CLASS = XposedHelpers.findClassIfExists(
-                DEVICELEVEL_UTILS_CLASSNAME,
+        val _DEVICE_LEVEL_UTILS_CLASS = XposedHelpers.findClassIfExists(
+                DEVICE_LEVEL_UTILS_CLASSNAME,
                 lpparam.classLoader
         ) ?: return
-        val _CPULEVEL_UTILS_CLASS = XposedHelpers.findClassIfExists(
-                CPULEVEL_UTILS_CLASSNAME,
+        val _CPU_LEVEL_UTILS_CLASS = XposedHelpers.findClassIfExists(
+                CPU_LEVEL_UTILS_CLASSNAME,
                 lpparam.classLoader
         ) ?: return
         val _UTILITIES_CLASS = XposedHelpers.findClassIfExists(
@@ -246,15 +246,15 @@ class MainHook : IXposedHookLoadPackage, IXposedHookInitPackageResources {
         // 打开文件夹是否开启模糊
         replaceMethodResult(_BLUR_UTILS_CLASS, "isUserBlurWhenOpenFolder", true)
         // 设备等级
-        replaceMethodResult(_DEVICELEVEL_UTILS_CLASS, "getDeviceLevel", 2)
-        replaceMethodResult(_DEVICELEVEL_UTILS_CLASS, "getDeviceLevel", 2, Int::class.java)
-        replaceMethodResult(_DEVICELEVEL_UTILS_CLASS, "getDeviceLevel", 2, Int::class.java, Int::class.java)
-        replaceMethodResult(_DEVICELEVEL_UTILS_CLASS, "getDeviceLevel1", 2, Int::class.java)
-        replaceMethodResult(_DEVICELEVEL_UTILS_CLASS, "isUseSimpleAnim", false)
-        replaceMethodResult(_DEVICELEVEL_UTILS_CLASS, "getQualcommCpuLevel", 2, String::class.java)
-        replaceMethodResult(_CPULEVEL_UTILS_CLASS, "getQualcommCpuLevel", 2, String::class.java)
+        replaceMethodResult(_DEVICE_LEVEL_UTILS_CLASS, "getDeviceLevel", 2)
+        replaceMethodResult(_DEVICE_LEVEL_UTILS_CLASS, "getDeviceLevel", 2, Int::class.java)
+        replaceMethodResult(_DEVICE_LEVEL_UTILS_CLASS, "getDeviceLevel", 2, Int::class.java, Int::class.java)
+        replaceMethodResult(_DEVICE_LEVEL_UTILS_CLASS, "getDeviceLevel1", 2, Int::class.java)
+        replaceMethodResult(_DEVICE_LEVEL_UTILS_CLASS, "isUseSimpleAnim", false)
+        replaceMethodResult(_DEVICE_LEVEL_UTILS_CLASS, "getQualcommCpuLevel", 2, String::class.java)
+        replaceMethodResult(_CPU_LEVEL_UTILS_CLASS, "getQualcommCpuLevel", 2, String::class.java)
         // 下载特效
-        replaceMethodResult(_CPULEVEL_UTILS_CLASS, "needMamlDownload", true)
+        replaceMethodResult(_CPU_LEVEL_UTILS_CLASS, "needMamlDownload", true)
         // 平滑动画
         replaceMethodResult(_UTILITIES_CLASS, "isUseSmoothAnimationEffect", true)
     }
@@ -262,7 +262,7 @@ class MainHook : IXposedHookLoadPackage, IXposedHookInitPackageResources {
     private fun resetDockRadius(res: XResources, context: Context, drawableName: String) {
         try {
             res.setReplacement(
-                    MIUI_HOME_LAUNCHER_PACKAGENAME,
+                    MIUI_HOME_LAUNCHER_PACKAGE_NAME,
                     "drawable",
                     drawableName,
                     object : XResources.DrawableLoader() {
@@ -271,7 +271,7 @@ class MainHook : IXposedHookLoadPackage, IXposedHookInitPackageResources {
                                     context, xres.getIdentifier(
                                     drawableName,
                                     "drawable",
-                                    MIUI_HOME_LAUNCHER_PACKAGENAME
+                                    MIUI_HOME_LAUNCHER_PACKAGE_NAME
                             )
                             ) as RippleDrawable
                             val backgroundShape = background.getDrawable(0) as GradientDrawable
@@ -297,11 +297,11 @@ class MainHook : IXposedHookLoadPackage, IXposedHookInitPackageResources {
 
     private fun getData(key: String, defValue: Int): Int {
         try {
-            val pref = XSharedPreferences(SELF_PACKAGENAME, Utils().DATAFILENAME)
+            val pref = XSharedPreferences(SELF_PACKAGE_NAME, Utils().DATA_FILE_NAME)
             val value = pref.getInt(key, defValue)
             return value
         } catch (e: Throwable) {
-            XposedBridge.log("[MIUIDock] Can not get data:" + key)
+            XposedBridge.log("[MIUIDock] Can not get data:$key")
         }
         return defValue
     }

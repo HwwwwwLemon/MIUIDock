@@ -15,5 +15,8 @@
     <string name="restart_launcher_tips">Kill launcher process done</string>
     <string name="menu_about_title">About</string>
     <string name="dialog_about_message">I\'m Houkyo, I just want to make some apps better.</string>
+    <string name="dialog_about_message_mod">Coolapk : @Hwwwww (Modify)</string>
     <string name="module_not_enable">Module not working</string>
+    <string name="splash">Welcome</string>
+    <string name="version" translatable="false">1.5.0</string>
 </resources>

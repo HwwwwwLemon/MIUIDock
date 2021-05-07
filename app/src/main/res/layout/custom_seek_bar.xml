@@ -1,44 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical"
+              android:background="#00FFFFFF"
+>
+    <TextView
+            android:id="@+id/titleTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:text=""
+            android:textSize="18sp" android:layout_marginTop="2dp"/>
 
-    <SeekBar
-        android:id="@+id/mainSeekBar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
+    <com.jem.rubberpicker.RubberSeekBar
+            android:id="@+id/mainSeekBar"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            app:elasticBehavior="cubic"
+            app:dampingRatio="0.4"
+            app:defaultThumbRadius="10dp"
+            app:normalTrackColor="#AAAAAA"
+            app:highlightTrackColor="?attr/colorPrimary"
+            app:defaultThumbInsideColor="#7FFFFFFF"
+            app:highlightDefaultThumbOnTouchColor="@color/white"
+    />
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingHorizontal="10dp">
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="10dp">
 
         <TextView
-            android:id="@+id/minTextView"
-            android:layout_width="70dp"
-            android:layout_height="wrap_content"
-            android:text="0"
-            android:textSize="14sp" />
+                android:id="@+id/minTextView"
+                android:layout_width="70dp"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textSize="14sp"/>
 
         <TextView
-            android:id="@+id/valueTextView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="0"
-            android:textAlignment="center"
-            android:textSize="14sp" />
+                android:id="@+id/valueTextView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="0"
+                android:textAlignment="center"
+                android:textSize="14sp"/>
 
         <TextView
-            android:id="@+id/maxTextView"
-            android:layout_width="70dp"
-            android:layout_height="wrap_content"
-            android:text="0"
-            android:textAlignment="viewEnd"
-            android:textSize="14sp" />
+                android:id="@+id/maxTextView"
+                android:layout_width="70dp"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textAlignment="viewEnd"
+                android:textSize="14sp"/>
     </LinearLayout>
 </LinearLayout>

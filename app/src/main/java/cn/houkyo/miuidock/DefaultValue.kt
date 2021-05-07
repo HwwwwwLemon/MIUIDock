@@ -1,6 +1,8 @@
 package cn.houkyo.miuidock
 
-class DefaultValue {
+import java.io.Serializable
+
+class DefaultValue : Serializable {
     val radius = 20
     val height = 84
     val sideMargin = 30

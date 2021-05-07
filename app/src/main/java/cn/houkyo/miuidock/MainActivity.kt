@@ -9,11 +9,16 @@ import android.os.Bundle
 import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.*
+import android.widget.Button
+import android.widget.Switch
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
+import androidx.core.content.ContextCompat
 import cn.houkyo.miuidock.ui.CustomSeekBar
+import com.leaf.library.StatusBarUtil
 import java.io.DataOutputStream
+
 
 @SuppressLint("UseSwitchCompatOrMaterialCode")
 class MainActivity : AppCompatActivity() {
@@ -24,92 +29,113 @@ class MainActivity : AppCompatActivity() {
     private var iconBottomMargin = DefaultValue().iconBottomMargin
     private var highLevel = DefaultValue().highLevel
     private var hideIcon = DefaultValue().hideIcon
-    private var HideIconMenu: MenuItem? = null
+    private var hideIconMenu: MenuItem? = null
+    private var mToolbar: Toolbar? = null
+    private fun init() {
+        mToolbar = findViewById(R.id.toolbar)
+        setSupportActionBar(mToolbar)
+        supportActionBar?.title = ""
+        mToolbar?.background = if (!Utils().isDarkMode(this)) {
+            ContextCompat.getDrawable(this, R.drawable.gradient_color)
+        } else {
+            ContextCompat.getDrawable(this, R.drawable.gradient_color_dark)
+        }
+        StatusBarUtil.setGradientColor(this, mToolbar)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        if (!isModuleEnable()) {
-            val toast = Toast(this)
-            toast.setText(R.string.module_not_enable)
-            toast.show()
+        init()
+        if (!Utils().isModuleEnable()) {
+            Utils().showToast(this, R.string.module_not_enable)
+
         }
         radius = Utils().getData(this, "DOCK_RADIUS", radius)
         height = Utils().getData(this, "DOCK_HEIGHT", height)
         sideMargin = Utils().getData(this, "DOCK_SIDE", sideMargin)
         bottomMargin = Utils().getData(this, "DOCK_BOTTOM", bottomMargin)
+        iconBottomMargin = Utils().getData(this, "DOCK_ICON_BOTTOM", iconBottomMargin)
         highLevel = Utils().getData(this, "HIGH_LEVEL", highLevel)
         hideIcon = Utils().getData(this, "HIDE_ICON", hideIcon)
-        init()
+        initData()
     }
+
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu, menu)
-        HideIconMenu = menu.findItem(R.id.menu_hide_icon)
+        hideIconMenu = menu.findItem(R.id.menu_hide_icon)
         return true
     }
 
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
         if (hideIcon == 0) {
-            HideIconMenu?.setTitle(R.string.hide_app_icon)
+            hideIconMenu?.setTitle(R.string.hide_app_icon)
         } else {
-            HideIconMenu?.setTitle(R.string.show_app_icon)
+            hideIconMenu?.setTitle(R.string.show_app_icon)
         }
         return super.onPrepareOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val HideIcon = R.id.menu_hide_icon
-        val GoToSetting = R.id.menu_to_setting
-        val About = R.id.menu_about
-        when (item.getItemId()) {
-            HideIcon -> handleHideIcon()
-            GoToSetting -> goToSetting()
-            About -> showAbout()
+        val hideIcon = R.id.menu_hide_icon
+        val goToSetting = R.id.menu_to_setting
+        val about = R.id.menu_about
+        when (item.itemId) {
+            hideIcon -> handleHideIcon()
+            goToSetting -> goToSetting()
+            about -> showAbout()
         }
-        return true;
+        return super.onOptionsItemSelected(item)
     }
 
-    private fun init() {
-        val RadiusSeekBar = findViewById<CustomSeekBar>(R.id.dockRadiusSeekBar)
-        val HeightSeekBar = findViewById<CustomSeekBar>(R.id.dockHeightSeekBar)
-        val SideSeekBar = findViewById<CustomSeekBar>(R.id.dockSideSeekBar)
-        val BottomSeekBar = findViewById<CustomSeekBar>(R.id.dockBottomSeekBar)
-        val IconBottomSeekBar = findViewById<CustomSeekBar>(R.id.dockIconBottomSeekBar)
-        val HighLevelSwitch = findViewById<Switch>(R.id.highLevelSwitch)
-        val SaveButton = findViewById<Button>(R.id.saveButton)
 
-        RadiusSeekBar.setMinValue(0)
-        RadiusSeekBar.setMaxValue(height)
-        RadiusSeekBar.setValue(radius)
+    private fun initData() {
+        val radiusSeekBar = findViewById<CustomSeekBar>(R.id.dockRadiusSeekBar)
+        val heightSeekBar = findViewById<CustomSeekBar>(R.id.dockHeightSeekBar)
+        val sideSeekBar = findViewById<CustomSeekBar>(R.id.dockSideSeekBar)
+        val bottomSeekBar = findViewById<CustomSeekBar>(R.id.dockBottomSeekBar)
+        val iconBottomSeekBar = findViewById<CustomSeekBar>(R.id.dockIconBottomSeekBar)
+        val highLevelSwitch = findViewById<Switch>(R.id.highLevelSwitch)
+        val saveButton = findViewById<Button>(R.id.saveButton)
 
-        HeightSeekBar.setMinValue(30)
-        HeightSeekBar.setMaxValue(120)
-        HeightSeekBar.setValue(height)
-        HeightSeekBar.setOnValueChangeListener { value -> RadiusSeekBar.setMaxValue(value) }
+
+        radiusSeekBar.setTitle(resources.getString(R.string.dock_radius_property))
+        radiusSeekBar.setMinValue(0)
+        radiusSeekBar.setMaxValue(height)
+        radiusSeekBar.setValue(radius)
+
+        heightSeekBar.setTitle(resources.getString(R.string.dock_height_property))
+        heightSeekBar.setMinValue(30)
+        heightSeekBar.setMaxValue(120)
+        heightSeekBar.setValue(height)
+        heightSeekBar.setOnValueChangeListener { value -> radiusSeekBar.setMaxValue(value) }
 
         val deviceWidth = Utils().px2dip(this, resources.displayMetrics.widthPixels)
-        SideSeekBar.setMinValue(0)
-        SideSeekBar.setMaxValue((deviceWidth / 2) + 10)
-        SideSeekBar.setValue(sideMargin)
+        sideSeekBar.setTitle(resources.getString(R.string.dock_side_margin_property))
+        sideSeekBar.setMinValue(0)
+        sideSeekBar.setMaxValue((deviceWidth / 2) + 10)
+        sideSeekBar.setValue(sideMargin)
 
-        BottomSeekBar.setMinValue(0)
-        BottomSeekBar.setMaxValue(200)
-        BottomSeekBar.setValue(bottomMargin)
+        bottomSeekBar.setTitle(resources.getString(R.string.dock_bottom_margin_property))
+        bottomSeekBar.setMinValue(0)
+        bottomSeekBar.setMaxValue(200)
+        bottomSeekBar.setValue(bottomMargin)
 
-        IconBottomSeekBar.setMinValue(0)
-        IconBottomSeekBar.setMaxValue(200)
-        IconBottomSeekBar.setValue(iconBottomMargin)
+        iconBottomSeekBar.setTitle(resources.getString(R.string.dock_icon_bottom_margin_property))
+        iconBottomSeekBar.setMinValue(0)
+        iconBottomSeekBar.setMaxValue(200)
+        iconBottomSeekBar.setValue(iconBottomMargin)
 
-        HighLevelSwitch.isChecked = highLevel == 1
+        highLevelSwitch.isChecked = highLevel == 1
 
-        SaveButton.setOnClickListener {
-            radius = RadiusSeekBar.getValue()
-            height = HeightSeekBar.getValue()
-            sideMargin = SideSeekBar.getValue()
-            bottomMargin = BottomSeekBar.getValue()
-            iconBottomMargin = IconBottomSeekBar.getValue()
-            highLevel = if (HighLevelSwitch.isChecked) 1 else 0
+        saveButton.setOnClickListener {
+            radius = radiusSeekBar.getValue()
+            height = heightSeekBar.getValue()
+            sideMargin = sideSeekBar.getValue()
+            bottomMargin = bottomSeekBar.getValue()
+            iconBottomMargin = iconBottomSeekBar.getValue()
+            highLevel = if (highLevelSwitch.isChecked) 1 else 0
             Utils().saveData(this, "DOCK_RADIUS", radius)
             Utils().saveData(this, "DOCK_RADIUS", radius)
             Utils().saveData(this, "DOCK_HEIGHT", height)
@@ -117,13 +143,12 @@ class MainActivity : AppCompatActivity() {
             Utils().saveData(this, "DOCK_BOTTOM", bottomMargin)
             Utils().saveData(this, "DOCK_ICON_BOTTOM", iconBottomMargin)
             Utils().saveData(this, "HIGH_LEVEL", highLevel)
-            val toast = Toast(this)
-            if (isModuleEnable()) {
-                toast.setText(R.string.dock_save_tips)
+            if (Utils().isModuleEnable()) {
+                Utils().showToast(this, R.string.dock_save_tips)
+                goToSetting()
             } else {
-                toast.setText(R.string.module_not_enable)
+                Utils().showToast(this, R.string.module_not_enable)
             }
-            toast.show()
         }
     }
 
@@ -133,16 +158,16 @@ class MainActivity : AppCompatActivity() {
             // 图标显示时操作 -> 隐藏图标
             switch = PackageManager.COMPONENT_ENABLED_STATE_DISABLED
             hideIcon = 1
-            HideIconMenu?.setTitle(R.string.show_app_icon)
+            hideIconMenu?.setTitle(R.string.show_app_icon)
         } else {
             // 图标隐藏时操作 -> 显示图标
             hideIcon = 0
-            HideIconMenu?.setTitle(R.string.hide_app_icon)
+            hideIconMenu?.setTitle(R.string.hide_app_icon)
         }
         Utils().saveData(this, "HIDE_ICON", hideIcon)
-        this.getPackageManager().setComponentEnabledSetting(
-                ComponentName(this, this.javaClass.name + "Alias"),
-                switch, PackageManager.DONT_KILL_APP
+        this.packageManager.setComponentEnabledSetting(
+            ComponentName(this, "cn.houkyo.miuidock.SplashActivityAlias"),
+            switch, PackageManager.DONT_KILL_APP
         )
     }
 
@@ -155,9 +180,7 @@ class MainActivity : AppCompatActivity() {
             os.close()
             val exitValue = suProcess.waitFor()
             if (exitValue == 0) {
-                val toast = Toast(this)
-                toast.setText(R.string.restart_launcher_tips)
-                toast.show()
+                Utils().showToast(this, R.string.restart_launcher_tips)
             } else {
                 throw Exception()
             }
@@ -170,24 +193,30 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showAbout() {
-        val AlertDialogBuilder = AlertDialog.Builder(this)
-        AlertDialogBuilder.setTitle(R.string.menu_about_title)
-        AlertDialogBuilder.setMessage(R.string.dialog_about_message)
-        AlertDialogBuilder.setCancelable(true)
-        AlertDialogBuilder.setPositiveButton(
-                "OK"
-        ) { dialog, id -> dialog.cancel() }
-        AlertDialogBuilder.setNegativeButton(
-                "Github"
-        ) { dialog, id ->
+        val alertDialogBuilder = AlertDialog.Builder(this, R.style.AlertDialog)
+        alertDialogBuilder.setTitle(R.string.menu_about_title)
+        alertDialogBuilder.setView(R.layout.about)
+        alertDialogBuilder.setPositiveButton(
+            "OK"
+        ) { dialog, _ -> dialog.cancel() }
+        alertDialogBuilder.setNegativeButton(
+            "Github"
+        ) { _, _ ->
             val github = "https://www.github.com/ouhoukyo/MIUIDock"
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(github)))
         }
-        val dialog = AlertDialogBuilder.create()
+        val dialog = alertDialogBuilder.create()
         dialog.show()
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Utils().getColorPrimary(this))
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Utils().getColorPrimary(this))
     }
 
-    private fun isModuleEnable(): Boolean {
-        return false
+
+    override fun onBackPressed() {
+        // super.onBackPressed(); 	不要调用父类的方法
+        val intent = Intent(Intent.ACTION_MAIN)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        intent.addCategory(Intent.CATEGORY_HOME)
+        startActivity(intent)
     }
 }
