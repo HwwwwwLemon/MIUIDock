@@ -5,11 +5,10 @@ import android.content.Context;
 import android.content.res.Configuration
 import android.util.TypedValue
 import android.widget.Toast
-import de.robv.android.xposed.XposedBridge
+import java.io.DataOutputStream
 
 
-class Utils {
-    val DATA_FILE_NAME = "MIUIDockConfig"
+object Utils {
 
     fun dip2px(context: Context, dpValue: Int): Int {
         val scale = context.resources.displayMetrics.density
@@ -21,27 +20,14 @@ class Utils {
         return (pxValue / scale + 0.5f).toInt()
     }
 
-    fun saveData(context: Context, key: String, value: Int) {
-        try {
-            val sharedPreferences = context.getSharedPreferences(BuildConfig.APPLICATION_ID, Context.MODE_WORLD_READABLE)
-            val editor = sharedPreferences.edit()
-            editor.putInt(key, value)
-            editor.apply()
-        } catch (e: Throwable) {
-            // 也许是模块尚未加载
-            XposedBridge.log("[MIUIDock] Error:" + e.message)
-        }
-    }
 
-    fun getData(context: Context, key: String, defValue: Int): Int {
-        try {
-            val sharedPreferences = context.getSharedPreferences(BuildConfig.APPLICATION_ID, Context.MODE_WORLD_READABLE)
-            return sharedPreferences.getInt(key, defValue)
-        } catch (e: Throwable) {
-            // 也许是模块尚未加载
-            XposedBridge.log("[MIUIDock] Error:" + e.message)
-        }
-        return defValue
+    fun killMIUIHomeProcess(): Int {
+        val suProcess = Runtime.getRuntime().exec("su")
+        val os = DataOutputStream(suProcess.outputStream)
+        os.writeBytes("am force-stop com.miui.home;exit;")
+        os.flush()
+        os.close()
+        return suProcess.waitFor()
     }
 
     fun isModuleEnable(): Boolean {

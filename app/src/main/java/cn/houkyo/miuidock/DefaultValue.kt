@@ -1,13 +1,13 @@
 package cn.houkyo.miuidock
 
-import java.io.Serializable
 
-class DefaultValue : Serializable {
-    val radius = 20
-    val height = 84
-    val sideMargin = 30
-    val bottomMargin = 23
-    val highLevel = 1
-    val hideIcon = 0
-    val iconBottomMargin = 35
+object DefaultValue {
+    var radius: Int = 20
+    var height: Int = 84
+    var sideMargin: Int = 30
+    var bottomMargin: Int = 23
+    var highLevel: Int = 1
+    var hideIcon: Int = 0
+    var iconBottomMargin: Int = 35
+
 }

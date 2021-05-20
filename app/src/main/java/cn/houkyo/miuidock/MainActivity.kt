@@ -2,6 +2,7 @@ package cn.houkyo.miuidock
 
 import android.annotation.SuppressLint
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -17,25 +18,24 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import cn.houkyo.miuidock.ui.CustomSeekBar
 import com.leaf.library.StatusBarUtil
-import java.io.DataOutputStream
 
 
 @SuppressLint("UseSwitchCompatOrMaterialCode")
 class MainActivity : AppCompatActivity() {
-    private var radius = DefaultValue().radius
-    private var height = DefaultValue().height
-    private var sideMargin = DefaultValue().sideMargin
-    private var bottomMargin = DefaultValue().bottomMargin
-    private var iconBottomMargin = DefaultValue().iconBottomMargin
-    private var highLevel = DefaultValue().highLevel
-    private var hideIcon = DefaultValue().hideIcon
+    private var radius = DefaultValue.radius
+    private var height = DefaultValue.height
+    private var sideMargin = DefaultValue.sideMargin
+    private var bottomMargin = DefaultValue.bottomMargin
+    private var iconBottomMargin = DefaultValue.iconBottomMargin
+    private var highLevel = DefaultValue.highLevel
+    private var hideIcon = DefaultValue.hideIcon
     private var hideIconMenu: MenuItem? = null
     private var mToolbar: Toolbar? = null
     private fun init() {
         mToolbar = findViewById(R.id.toolbar)
         setSupportActionBar(mToolbar)
         supportActionBar?.title = ""
-        mToolbar?.background = if (!Utils().isDarkMode(this)) {
+        mToolbar?.background = if (!Utils.isDarkMode(this)) {
             ContextCompat.getDrawable(this, R.drawable.gradient_color)
         } else {
             ContextCompat.getDrawable(this, R.drawable.gradient_color_dark)
@@ -47,17 +47,26 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         init()
-        if (!Utils().isModuleEnable()) {
-            Utils().showToast(this, R.string.module_not_enable)
-
+        if (!Utils.isModuleEnable()) {
+            Utils.showToast(this, R.string.module_not_enable)
         }
-        radius = Utils().getData(this, "DOCK_RADIUS", radius)
-        height = Utils().getData(this, "DOCK_HEIGHT", height)
-        sideMargin = Utils().getData(this, "DOCK_SIDE", sideMargin)
-        bottomMargin = Utils().getData(this, "DOCK_BOTTOM", bottomMargin)
-        iconBottomMargin = Utils().getData(this, "DOCK_ICON_BOTTOM", iconBottomMargin)
-        highLevel = Utils().getData(this, "HIGH_LEVEL", highLevel)
-        hideIcon = Utils().getData(this, "HIDE_ICON", hideIcon)
+
+
+
+        radius = MySharePreferences.getData(this, "DOCK_RADIUS", radius) as Int
+
+        height = MySharePreferences.getData(this, "DOCK_HEIGHT", height) as Int
+
+        sideMargin = MySharePreferences.getData(this, "DOCK_SIDE", sideMargin) as Int
+
+        bottomMargin = MySharePreferences.getData(this, "DOCK_BOTTOM", bottomMargin) as Int
+
+        iconBottomMargin = MySharePreferences.getData(this, "DOCK_ICON_BOTTOM", iconBottomMargin) as Int
+
+        highLevel = MySharePreferences.getData(this, "HIGH_LEVEL", highLevel) as Int
+
+        hideIcon = MySharePreferences.getData(this, "HIDE_ICON", hideIcon) as Int
+
         initData()
     }
 
@@ -83,7 +92,7 @@ class MainActivity : AppCompatActivity() {
         val about = R.id.menu_about
         when (item.itemId) {
             hideIcon -> handleHideIcon()
-            goToSetting -> goToSetting()
+            goToSetting -> killHome()
             about -> showAbout()
         }
         return super.onOptionsItemSelected(item)
@@ -111,7 +120,7 @@ class MainActivity : AppCompatActivity() {
         heightSeekBar.setValue(height)
         heightSeekBar.setOnValueChangeListener { value -> radiusSeekBar.setMaxValue(value) }
 
-        val deviceWidth = Utils().px2dip(this, resources.displayMetrics.widthPixels)
+        val deviceWidth = Utils.px2dip(this, resources.displayMetrics.widthPixels)
         sideSeekBar.setTitle(resources.getString(R.string.dock_side_margin_property))
         sideSeekBar.setMinValue(0)
         sideSeekBar.setMaxValue((deviceWidth / 2) + 10)
@@ -136,18 +145,18 @@ class MainActivity : AppCompatActivity() {
             bottomMargin = bottomSeekBar.getValue()
             iconBottomMargin = iconBottomSeekBar.getValue()
             highLevel = if (highLevelSwitch.isChecked) 1 else 0
-            Utils().saveData(this, "DOCK_RADIUS", radius)
-            Utils().saveData(this, "DOCK_RADIUS", radius)
-            Utils().saveData(this, "DOCK_HEIGHT", height)
-            Utils().saveData(this, "DOCK_SIDE", sideMargin)
-            Utils().saveData(this, "DOCK_BOTTOM", bottomMargin)
-            Utils().saveData(this, "DOCK_ICON_BOTTOM", iconBottomMargin)
-            Utils().saveData(this, "HIGH_LEVEL", highLevel)
-            if (Utils().isModuleEnable()) {
-                Utils().showToast(this, R.string.dock_save_tips)
-                goToSetting()
+            MySharePreferences.setData(this, "DOCK_RADIUS", radius)
+            MySharePreferences.setData(this, "DOCK_RADIUS", radius)
+            MySharePreferences.setData(this, "DOCK_HEIGHT", height)
+            MySharePreferences.setData(this, "DOCK_SIDE", sideMargin)
+            MySharePreferences.setData(this, "DOCK_BOTTOM", bottomMargin)
+            MySharePreferences.setData(this, "DOCK_ICON_BOTTOM", iconBottomMargin)
+            MySharePreferences.setData(this, "HIGH_LEVEL", highLevel)
+            if (Utils.isModuleEnable()) {
+                Utils.showToast(this, R.string.dock_save_tips)
+                killHome()
             } else {
-                Utils().showToast(this, R.string.module_not_enable)
+                Utils.showToast(this, R.string.module_not_enable)
             }
         }
     }
@@ -164,30 +173,24 @@ class MainActivity : AppCompatActivity() {
             hideIcon = 0
             hideIconMenu?.setTitle(R.string.hide_app_icon)
         }
-        Utils().saveData(this, "HIDE_ICON", hideIcon)
+        MySharePreferences.setData(this, "HIDE_ICON", hideIcon)
         this.packageManager.setComponentEnabledSetting(
             ComponentName(this, "cn.houkyo.miuidock.SplashActivityAlias"),
             switch, PackageManager.DONT_KILL_APP
         )
     }
 
-    private fun goToSetting() {
+    private fun killHome() {
         try {
-            val suProcess = Runtime.getRuntime().exec("su")
-            val os = DataOutputStream(suProcess.outputStream)
-            os.writeBytes("am force-stop com.miui.home;exit;")
-            os.flush()
-            os.close()
-            val exitValue = suProcess.waitFor()
-            if (exitValue == 0) {
-                Utils().showToast(this, R.string.restart_launcher_tips)
+
+            if (Utils.killMIUIHomeProcess() == 0) {
+                Utils.showToast(this, R.string.restart_launcher_tips)
             } else {
                 throw Exception()
             }
         } catch (e: Exception) {
             val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-            val uri = Uri.fromParts("package", "com.miui.home", null)
-            intent.data = uri
+            intent.data = Uri.fromParts("package", "com.miui.home", null)
             startActivity(intent)
         }
     }
@@ -207,8 +210,8 @@ class MainActivity : AppCompatActivity() {
         }
         val dialog = alertDialogBuilder.create()
         dialog.show()
-        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Utils().getColorPrimary(this))
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Utils().getColorPrimary(this))
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Utils.getColorPrimary(this))
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Utils.getColorPrimary(this))
     }
 
 

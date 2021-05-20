@@ -18,5 +18,5 @@
     <string name="dialog_about_message_mod">Coolapk : @Hwwwww (Modify)</string>
     <string name="module_not_enable">Module not working</string>
     <string name="splash">Welcome</string>
-    <string name="version" translatable="false">1.5.1</string>
+    <string name="version" translatable="false">1.5.2</string>
 </resources>

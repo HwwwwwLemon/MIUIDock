@@ -1,6 +1,7 @@
 package cn.houkyo.miuidock
 
 import android.content.Context
+import android.content.res.Resources
 import android.content.res.XResources
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
@@ -28,12 +29,12 @@ class MainHook : IXposedHookLoadPackage, IXposedHookInitPackageResources {
         const val UTILITIES_CLASSNAME = "$MIUI_HOME_LAUNCHER_PACKAGE_NAME.launcher.common.Utilities"
 
         // 单位dip
-        val DOCK_RADIUS = DefaultValue().radius
-        val DOCK_HEIGHT = DefaultValue().height
-        val DOCK_SIDE = DefaultValue().sideMargin
-        val DOCK_BOTTOM = DefaultValue().bottomMargin
-        val HIGH_LEVEL = DefaultValue().highLevel
-        val DOCK_ICON_BOTTOM = DefaultValue().iconBottomMargin
+        val DOCK_RADIUS = DefaultValue.radius
+        val DOCK_HEIGHT = DefaultValue.height
+        val DOCK_SIDE = DefaultValue.sideMargin
+        val DOCK_BOTTOM = DefaultValue.bottomMargin
+        val HIGH_LEVEL = DefaultValue.highLevel
+        val DOCK_ICON_BOTTOM = DefaultValue.iconBottomMargin
 
         // 需要修改圆角的资源
         val drawableNameList = arrayOf(
@@ -124,7 +125,7 @@ class MainHook : IXposedHookLoadPackage, IXposedHookInitPackageResources {
                         // 清空搜索图标和小爱同学
                         searchBarDesktop.removeAllViews()
                         // 修改高度
-                        searchBarObject.layoutParams.height = Utils().dip2px(
+                        searchBarObject.layoutParams.height = Utils.dip2px(
                             searchBarDesktop.context,
                             getData("DOCK_HEIGHT", DOCK_HEIGHT)
                         )
@@ -139,12 +140,12 @@ class MainHook : IXposedHookLoadPackage, IXposedHookInitPackageResources {
                         mAllAppSearchView.addView(searchBarDrawer)
                         searchBarDrawer.bringToFront()
                         val layoutParams = searchBarDrawer.layoutParams as FrameLayout.LayoutParams
-                        searchBarDrawer.layoutParams.height = Utils().dip2px(
+                        searchBarDrawer.layoutParams.height = Utils.dip2px(
                             searchBarDesktop.context,
                             45
                         )
-                        layoutParams.leftMargin = Utils().dip2px(searchBarDesktop.context, 15)
-                        layoutParams.rightMargin = Utils().dip2px(searchBarDesktop.context, 15)
+                        layoutParams.leftMargin = Utils.dip2px(searchBarDesktop.context, 0)
+                        layoutParams.rightMargin = Utils.dip2px(searchBarDesktop.context, 0)
                         searchBarDrawer.layoutParams = layoutParams
                     }
                 })
@@ -182,7 +183,7 @@ class MainHook : IXposedHookLoadPackage, IXposedHookInitPackageResources {
                     override fun beforeHookedMethod(param: MethodHookParam) {
                         super.beforeHookedMethod(param)
                         val _context = param.args[0] as Context
-                        param.result = Utils().dip2px(_context, getData("DOCK_ICON_BOTTOM", DOCK_ICON_BOTTOM))
+                        param.result = Utils.dip2px(_context, getData("DOCK_ICON_BOTTOM", DOCK_ICON_BOTTOM))
                     }
                 })
             // 搜索框宽度
@@ -193,18 +194,27 @@ class MainHook : IXposedHookLoadPackage, IXposedHookInitPackageResources {
                 object : XC_MethodHook() {
                     override fun beforeHookedMethod(param: MethodHookParam) {
                         super.beforeHookedMethod(param)
+
                         val _context = param.args[0] as Context
-                        val deviceWidth = Utils().px2dip(
+
+                        val deviceWidth = Utils.px2dip(
                             _context,
                             _context.resources.displayMetrics.widthPixels
                         )
                         param.result =
-                            Utils().dip2px(
+                            Utils.dip2px(
                                 _context,
                                 deviceWidth - getData("DOCK_SIDE", DOCK_SIDE)
                             )
                     }
                 })
+            XposedHelpers.findAndHookMethod(
+                _DEVICE_CONFIG_CLASS,
+                "getSearchBarWidthDelta",
+                XC_MethodReplacement.returnConstant(0)
+
+            )
+
             // Dock底部边距
             XposedHelpers.findAndHookMethod(
                 _DEVICE_CONFIG_CLASS,
@@ -216,7 +226,7 @@ class MainHook : IXposedHookLoadPackage, IXposedHookInitPackageResources {
                         super.beforeHookedMethod(param)
                         val _context = param.args[0] as Context
                         param.result =
-                            Utils().dip2px(_context, getData("DOCK_BOTTOM", DOCK_BOTTOM))
+                            Utils.dip2px(_context, getData("DOCK_BOTTOM", DOCK_BOTTOM))
                     }
                 })
         } catch (e: Throwable) {
@@ -272,7 +282,7 @@ class MainHook : IXposedHookLoadPackage, IXposedHookInitPackageResources {
                         ) as RippleDrawable
                         val backgroundShape = background.getDrawable(0) as GradientDrawable
                         backgroundShape.cornerRadius =
-                            Utils().dip2px(context, getData("DOCK_RADIUS", DOCK_RADIUS))
+                            Utils.dip2px(context, getData("DOCK_RADIUS", DOCK_RADIUS))
                                 .toFloat()
                         background.setDrawable(0, backgroundShape)
                         return background
@@ -286,6 +296,7 @@ class MainHook : IXposedHookLoadPackage, IXposedHookInitPackageResources {
     private fun replaceMethodResult(clazz: Class<*>, methodName: String, result: Any, vararg args: Any?) {
         try {
             XposedHelpers.findAndHookMethod(clazz, methodName, *args, XC_MethodReplacement.returnConstant(result))
+            XposedBridge.log("[MIUIDock] Replace Method Called $methodName Successfully!")
         } catch (e: Throwable) {
             XposedBridge.log("[MIUIDock] Replace Method Result Error:" + e.message)
         }

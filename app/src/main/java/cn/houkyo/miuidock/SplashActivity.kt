@@ -18,11 +18,11 @@ class SplashActivity : AppCompatActivity() {
         val handler = Handler()
         handler.postDelayed({
 
-            if (Utils().isModuleEnable()) {
+            if (Utils.isModuleEnable()) {
                 val intent = Intent(this@SplashActivity, MainActivity::class.java)
                 startActivity(intent)
             } else {
-                Utils().showToast(this, R.string.module_not_enable)
+                Utils.showToast(this, R.string.module_not_enable)
                 exitProcess(0)
             }
 
@@ -30,4 +30,3 @@ class SplashActivity : AppCompatActivity() {
         }, 1500)
     }
 }
-
