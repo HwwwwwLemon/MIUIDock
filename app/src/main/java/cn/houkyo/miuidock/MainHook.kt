@@ -22,6 +22,7 @@ class MainHook : IXposedHookLoadPackage, IXposedHookInitPackageResources {
         const val DEVICE_CONFIG_CLASSNAME = "$MIUI_HOME_LAUNCHER_PACKAGE_NAME.launcher.DeviceConfig"
         const val LAUNCHER_CLASSNAME = "$MIUI_HOME_LAUNCHER_PACKAGE_NAME.launcher.Launcher"
         const val BLUR_UTILS_CLASSNAME = "$MIUI_HOME_LAUNCHER_PACKAGE_NAME.launcher.common.BlurUtils"
+        const val SEARCH_BAR_BLUR = "$MIUI_HOME_LAUNCHER_PACKAGE_NAME.launcher.SearchBarStyleData"
         const val DEVICE_LEVEL_UTILS_CLASSNAME =
             "$MIUI_HOME_LAUNCHER_PACKAGE_NAME.launcher.common.DeviceLevelUtils"
         const val CPU_LEVEL_UTILS_CLASSNAME =
@@ -144,8 +145,8 @@ class MainHook : IXposedHookLoadPackage, IXposedHookInitPackageResources {
                             searchBarDesktop.context,
                             45
                         )
-                        layoutParams.leftMargin = Utils.dip2px(searchBarDesktop.context, 0)
-                        layoutParams.rightMargin = Utils.dip2px(searchBarDesktop.context, 0)
+                        layoutParams.leftMargin = Utils.dip2px(searchBarDesktop.context, 15)
+                        layoutParams.rightMargin = Utils.dip2px(searchBarDesktop.context, 15)
                         searchBarDrawer.layoutParams = layoutParams
                     }
                 })
@@ -208,11 +209,19 @@ class MainHook : IXposedHookLoadPackage, IXposedHookInitPackageResources {
                             )
                     }
                 })
+
+
             XposedHelpers.findAndHookMethod(
                 _DEVICE_CONFIG_CLASS,
                 "getSearchBarWidthDelta",
                 XC_MethodReplacement.returnConstant(0)
 
+            )
+
+            XposedHelpers.findAndHookMethod(
+                XposedHelpers.findClassIfExists(SEARCH_BAR_BLUR, lpparam.classLoader),
+                "isUserBlur",
+                XC_MethodReplacement.returnConstant(true)
             )
 
             // Dock底部边距
