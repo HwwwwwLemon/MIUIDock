@@ -3,6 +3,7 @@ package cn.houkyo.miuidock
 import android.content.Context
 import android.content.res.Resources
 import android.content.res.XResources
+import android.graphics.PixelFormat
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
@@ -22,6 +23,7 @@ class MainHook : IXposedHookLoadPackage, IXposedHookInitPackageResources {
         const val DEVICE_CONFIG_CLASSNAME = "$MIUI_HOME_LAUNCHER_PACKAGE_NAME.launcher.DeviceConfig"
         const val LAUNCHER_CLASSNAME = "$MIUI_HOME_LAUNCHER_PACKAGE_NAME.launcher.Launcher"
         const val BLUR_UTILS_CLASSNAME = "$MIUI_HOME_LAUNCHER_PACKAGE_NAME.launcher.common.BlurUtils"
+        const val DARK_MODE_CLASS = "$MIUI_HOME_LAUNCHER_PACKAGE_NAME.launcher.SearchBarDesktopLayout"
         const val SEARCH_BAR_BLUR = "$MIUI_HOME_LAUNCHER_PACKAGE_NAME.launcher.SearchBarStyleData"
         const val DEVICE_LEVEL_UTILS_CLASSNAME =
             "$MIUI_HOME_LAUNCHER_PACKAGE_NAME.launcher.common.DeviceLevelUtils"
@@ -224,6 +226,7 @@ class MainHook : IXposedHookLoadPackage, IXposedHookInitPackageResources {
                 XC_MethodReplacement.returnConstant(true)
             )
 
+
             // Dock底部边距
             XposedHelpers.findAndHookMethod(
                 _DEVICE_CONFIG_CLASS,
@@ -293,6 +296,7 @@ class MainHook : IXposedHookLoadPackage, IXposedHookInitPackageResources {
                         backgroundShape.cornerRadius =
                             Utils.dip2px(context, getData("DOCK_RADIUS", DOCK_RADIUS))
                                 .toFloat()
+                        backgroundShape.setStroke(0, 0)
                         background.setDrawable(0, backgroundShape)
                         return background
                     }
@@ -305,7 +309,7 @@ class MainHook : IXposedHookLoadPackage, IXposedHookInitPackageResources {
     private fun replaceMethodResult(clazz: Class<*>, methodName: String, result: Any, vararg args: Any?) {
         try {
             XposedHelpers.findAndHookMethod(clazz, methodName, *args, XC_MethodReplacement.returnConstant(result))
-            XposedBridge.log("[MIUIDock] Replace Method Called $methodName Successfully!")
+            //  XposedBridge.log("[MIUIDock] Replace Method Called $methodName Successfully!")
         } catch (e: Throwable) {
             XposedBridge.log("[MIUIDock] Replace Method Result Error:" + e.message)
         }
